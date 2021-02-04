@@ -1,4 +1,13 @@
 #include<stdio.h>
+
+#include<stdlib.h>
+#include<sys/socket.h>
+#include<string.h>
+#include<sys/types.h>
+#include<netinet/in.h>
+#include<unistd.h>
+#include<arpa/inet.h>
+#include<time.h>
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<arpa/inet.h>
@@ -16,8 +25,9 @@ int len;
 unsigned char buff[1024];
 
 ////////////////////////////////////////////////////////////////////////////////////////////
+////// msege que//////////////////////
 
-int main()
+void msg_qu()
 {
 
 struct mq_attr cdac_atrr;
@@ -55,52 +65,70 @@ mqd_t  mqfd;
         mq_close(mqfd);
 
 
-return 0;
 }
 
 
 
 
-
-
-
-
-
-
-
-
-void receve_data(int)
+//////////////////////////////////
+int main()
 {
+                
+                struct sockaddr_in saddr;
+                char buff1[40];
+		char buff2[40];
+		char buff3[40];
+		char buff4[40];
+                
+		int tcpsock_fd=socket(AF_INET,SOCK_STREAM,0);//listen tcp	
+                if(tcpsock_fd<0)
+                {
+                 printf("socket creation failed for tcp\n");
+                 return -1;
+                }
 
-     if
+		 saddr.sin_family=AF_INET;
+                 saddr.sin_port=htons(2086);
+                 saddr.sin_addr.s_addr=inet_addr("127.0.0.1");
+		
+                 int sock_temp=bind(tcpsock_fd,(struct sockaddr *)&saddr,sizeof(saddr));//tcp
+		 
+		
+		saddr.sin_port=htons(2087);
+                 saddr.sin_addr.s_addr=inet_addr("127.0.0.1");
+		//Binding TCP socket for client_temp_thur
+                 int sock_thur=bind(tcpsock_fd,(struct sockaddr *)&saddr,sizeof(saddr));//tcp
+		 
+
+		saddr.sin_port=htons(2088);
+                 saddr.sin_addr.s_addr=inet_addr("127.0.0.1");
+		//Binding TCP socket for client_Acc
+                 int sock_acc=bind(tcpsock_fd,(struct sockaddr *)&saddr,sizeof(saddr));//tcp
+		 
 
 
-}
-int main(int argc, char const *argv[])
-{
-	cfd = socket(AF_INET,SOCK_STREAM,0);
+		saddr.sin_port=htons(2089);
+                 saddr.sin_addr.s_addr=inet_addr("127.0.0.1");
+		//Binding TCP socket for client_gyro
+                 int sock_gyro=bind(tcpsock_fd,(struct sockaddr *)&saddr,sizeof(saddr));//tcp
+		 
 
-	saddr.sin_family = AF_INET;
-	saddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	saddr.sin_port = htons(5678);
+		while(1)
+		{
 
-	bind(sfd, (struct sockaddr *)&saddr, sizeof(struct sockaddr_in));
+			int gyro=listen(sock_gyro,10);
+			int acc=listen(sock_acc,10);
+			int thur=listen(sock_thur,10);
+			int temp=listen(sock_temp,10);
 
-	check=listen(sfd,10);
-	if(check == -1)
-		printf("error in listen\n");
+			read(gyro,buff4,sizeof(buff4));
+			read(acc,buff3,sizeof(buff3));
+			read(thur,buff1,sizeof(buff2));
+			read(temp,buff1,sizeof(buff1));
+			
+			
 
-	len = sizeof(struct sockaddr_in);
-	cfd = accept(sfd,(struct sockaddr *)&caddr, &len);
-	
-	if(cfd == -1)
-		printf("error while accept\n");
 
-	write(cfd,"hello client\n",13);
-	read(cfd,buff,1024);
-
-	printf("client send:%s\n",buff);
-	
+		}
 	close(cfd);
-	close(sfd);
-}
+	
